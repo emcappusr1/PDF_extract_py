@@ -66,6 +66,8 @@ docker build -t mcq-extractor .
 
 # Run the container
 docker run -p 8001:8001 mcq-extractor
+
+> **Production Deployment:** For detailed instructions on deploying to a production server with SSL, see [DEPLOYMENT.md](DEPLOYMENT.md).
 ```
 
 ## API Endpoints

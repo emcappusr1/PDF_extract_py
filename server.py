@@ -21,6 +21,10 @@ app = FastAPI(
     version="1.0.0"
 )
 
+@app.get("/")
+def home():
+    return {"message": "PDF Extract API Running"}
+
 # Create a router with the /api prefix
 api_router = APIRouter(prefix="/api")
 
