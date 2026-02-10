@@ -2,12 +2,13 @@ from fastapi import FastAPI, APIRouter, File, UploadFile, HTTPException
 from fastapi.responses import JSONResponse
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
+from typing import List
 import os
 import logging
 from pathlib import Path
 
 # Import custom modules
-from models import ExtractResponse, ErrorResponse
+from models import QuestionData, ExtractResponse, ErrorResponse
 from pdf_parser import PDFParser
 from question_extractor import QuestionExtractor
 
@@ -44,23 +45,23 @@ async def root():
 async def health_check():
     return {"status": "healthy", "service": "pdf-extractor"}
 
-# Main extraction endpoint
+# Main extraction endpoint - UPDATED to match Java backend requirement
 @api_router.post(
-    "/extract-questions",
-    response_model=ExtractResponse,
+    "/parse-pdf",
+    response_model=List[QuestionData],
     responses={
         200: {"description": "Questions extracted successfully"},
         400: {"model": ErrorResponse, "description": "Invalid file or parsing error"},
         500: {"model": ErrorResponse, "description": "Internal server error"}
     }
 )
-async def extract_questions(file: UploadFile = File(...)):
+async def parse_pdf(file: UploadFile = File(...)):
     """
-    Extract MCQ questions from uploaded PDF file
+    Extract MCQ questions from uploaded PDF file and return as a flat list
     
     - **file**: PDF file containing MCQ questions
     
-    Returns JSON with questions, options, and correct answers
+    Returns List[QuestionData]
     """
     try:
         # Validate file type
@@ -107,10 +108,8 @@ async def extract_questions(file: UploadFile = File(...)):
         
         logger.info(f"Successfully extracted {len(questions)} questions from {file.filename}")
         
-        return ExtractResponse(
-            questions=questions,
-            total_questions=len(questions)
-        )
+        # Return the list directly as requested
+        return questions
     
     except HTTPException:
         raise

@@ -30,17 +30,17 @@ b) Berlin
 # c) Paris
 d) Madrid
 
-2. Which planet is known as the Red Planet?
-a) Venus
-b) Jupiter
-# c) Mars
-d) Saturn
+2. Which type of Programming does Python support?
+a) object-oriented programming
+b) structured programming
+c) functional programming
+# all of the mentioned
 ```
 
 **Format Rules:**
 - Questions must be numbered (1. 2. 3. etc.)
 - Options must use letters a), b), c), d)
-- Correct answer must be marked with `#` at the start of the line
+- Correct answer must be marked with `#` at the start of the line (can replace the letter prefix)
 - Exactly 4 options per question
 
 ## Installation
@@ -74,29 +74,29 @@ docker run -p 8001:8001 mcq-extractor
 
 ### 1. Extract Questions
 
-**POST** `/api/extract-questions`
+**POST** `/api/parse-pdf`
 
-Upload a PDF file and extract MCQ questions.
+Upload a PDF file and extract MCQ questions in a JSON list format.
 
 **Request:**
 ```bash
-curl -X POST "http://localhost:8001/api/extract-questions" \
+curl -X POST "http://localhost:8001/api/parse-pdf" \
   -F "file=@sample.pdf" \
   -H "Accept: application/json"
 ```
 
 **Response:**
 ```json
-{
-  "questions": [
-    {
-      "question": "What is the capital of France?",
-      "options": ["London", "Berlin", "Paris", "Madrid"],
-      "answer": "Paris"
-    }
-  ],
-  "total_questions": 1
-}
+[
+  {
+    "content": "Which type of Programming does Python support?",
+    "optionA": "object-oriented programming",
+    "optionB": "structured programming",
+    "optionC": "functional programming",
+    "optionD": "all of the mentioned",
+    "correctAnswer": "D"
+  }
+]
 ```
 
 ### 2. Health Check

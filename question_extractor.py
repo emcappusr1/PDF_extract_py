@@ -46,13 +46,6 @@ class QuestionExtractor:
     def _parse_question_block(block: str) -> Optional[QuestionData]:
         """
         Parse a single question block
-        
-        Expected format example:
-        1. What is the capital of France?
-        a) London
-        b) Berlin
-        # Paris
-        d) Madrid
         """
         lines = block.strip().split('\n')
         lines = [line.strip() for line in lines if line.strip()]
@@ -61,7 +54,6 @@ class QuestionExtractor:
             return None
         
         # 1. Extract Question
-        # Matches "1. Text" or "1) Text"
         question_match = re.match(r'^\d+[\.\)]\s*(.+)$', lines[0])
         if not question_match:
             return None
@@ -69,53 +61,60 @@ class QuestionExtractor:
         question_text = question_match.group(1).strip()
         
         options = []
-        correct_answer = None
+        correct_answer_letter = None
         
         # Helper to extract text from "a) Text" or "a. Text"
         def extract_option_text(text):
-            # match "a) " or "a. "
             m = re.match(r'^[a-zA-Z][\.\)]\s*(.+)$', text)
             return m.group(1).strip() if m else text
 
-        # 2. Extract Options
+        current_idx = 0
+        
         for line in lines[1:]:
             line = line.strip()
             
             # Check for Correct Answer starting with #
             if line.startswith('#'):
                 # Found correct answer
-                # Remove '#'
                 raw_content = line[1:].strip()
-                # If it looks like "# c) Paris", extract "Paris"
-                # If it looks like "# Paris", extract "Paris"
                 opt_text = extract_option_text(raw_content)
-                
                 options.append(opt_text)
-                correct_answer = opt_text
+                
+                # Map index to Letter
+                if current_idx == 0: correct_answer_letter = "A"
+                elif current_idx == 1: correct_answer_letter = "B"
+                elif current_idx == 2: correct_answer_letter = "C"
+                elif current_idx == 3: correct_answer_letter = "D"
+                current_idx += 1
             
-            # Check for standard option start "a) ..." or "A. ..."
             elif re.match(r'^[a-zA-Z][\.\)]\s+', line):
                 opt_text = extract_option_text(line)
                 options.append(opt_text)
+                current_idx += 1
             
             else:
-                # Continuation line
-                # If we have options, append to last option
+                # Continuation if we have started collecting options
                 if options:
                     options[-1] += " " + line
                 else:
-                    # Append to question text
                     question_text += " " + line
                     
-        # Validate we found options and a correct answer
+        # Validate
         if len(options) < 2:
             return None
             
-        if not correct_answer:
+        if not correct_answer_letter:
             return None
             
+        # Ensure 4 options
+        while len(options) < 4:
+            options.append("")
+            
         return QuestionData(
-            question=question_text,
-            options=options,
-            answer=correct_answer
+            content=question_text,
+            optionA=options[0],
+            optionB=options[1],
+            optionC=options[2],
+            optionD=options[3],
+            correctAnswer=correct_answer_letter
         )
